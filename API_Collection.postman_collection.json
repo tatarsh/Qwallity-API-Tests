@@ -1,0 +1,85 @@
+{
+  "info": {
+    "name": "Qwallity API Tests",
+    "description": "Homework: Postman collection run by Newman in GitHub Actions (JSONPlaceholder API).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get all posts",
+      "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/posts" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+        "pm.test('Response is a non-empty array', () => {",
+        "  const body = pm.response.json();",
+        "  pm.expect(body).to.be.an('array').that.is.not.empty;",
+        "});",
+        "pm.test('Response time is below 3000ms', () => pm.expect(pm.response.responseTime).to.be.below(3000));"
+      ]}}]
+    },
+    {
+      "name": "Get post by id",
+      "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/posts/{{postId}}" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+        "pm.test('Post has the requested id and required fields', () => {",
+        "  const body = pm.response.json();",
+        "  pm.expect(body.id).to.eql(Number(pm.environment.get('postId')));",
+        "  pm.expect(body).to.have.all.keys('userId', 'id', 'title', 'body');",
+        "});"
+      ]}}]
+    },
+    {
+      "name": "Create post",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json; charset=UTF-8" }],
+        "body": { "mode": "raw", "raw": "{\n  \"title\": \"Qwallity homework\",\n  \"body\": \"Created by Newman in GitHub Actions\",\n  \"userId\": 1\n}" },
+        "url": "{{baseUrl}}/posts"
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status code is 201', () => pm.response.to.have.status(201));",
+        "pm.test('Created post echoes the sent data', () => {",
+        "  const body = pm.response.json();",
+        "  pm.expect(body.title).to.eql('Qwallity homework');",
+        "  pm.expect(body.userId).to.eql(1);",
+        "  pm.expect(body).to.have.property('id');",
+        "});"
+      ]}}]
+    },
+    {
+      "name": "Update post",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json; charset=UTF-8" }],
+        "body": { "mode": "raw", "raw": "{\n  \"id\": {{postId}},\n  \"title\": \"Updated title\",\n  \"body\": \"Updated body\",\n  \"userId\": 1\n}" },
+        "url": "{{baseUrl}}/posts/{{postId}}"
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+        "pm.test('Title is updated', () => pm.expect(pm.response.json().title).to.eql('Updated title'));"
+      ]}}]
+    },
+    {
+      "name": "Delete post",
+      "request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/posts/{{postId}}" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status code is 200', () => pm.response.to.have.status(200));"
+      ]}}]
+    },
+    {
+      "name": "Get comments for post",
+      "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/posts/{{postId}}/comments" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+        "pm.test('Every comment belongs to the post and has a valid email', () => {",
+        "  const postId = Number(pm.environment.get('postId'));",
+        "  pm.response.json().forEach(c => {",
+        "    pm.expect(c.postId).to.eql(postId);",
+        "    pm.expect(c.email).to.match(/@/);",
+        "  });",
+        "});"
+      ]}}]
+    }
+  ]
+}
